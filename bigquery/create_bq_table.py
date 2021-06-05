@@ -106,10 +106,6 @@ def create_table(table_id, schema):
         table = bigquery.Table(table_id, schema=schema)
         # Make an API request
         table = client_prod.create_table(table)
-        print(
-            f"Table {table_id} Created!"
-        )
+        print(f"Table {table_id} Created!")
     except Conflict:
-        print(
-            f"Table {table_id} Already Exist!"
-        )
+        print(f"Table {table_id} Already Exist!")

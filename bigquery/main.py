@@ -1,5 +1,5 @@
 from create_bq_table import create_table, schemaTempKeyword, \
-    schemaTransaction, schemaTopKeyword, schemaConvertedKeyword
+    schemaConvertedKeyword, schemaTopKeyword, schemaTransaction
 
 temp_search_history_table_id = "blank-space-315611.search_history.temp_search_history"
 converted_search_history_table_id = "blank-space-315611.search_history.converted_search_history"

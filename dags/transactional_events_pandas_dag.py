@@ -9,14 +9,19 @@ import pandas as pd
 
 PROJECT_ID = Variable.get("PROJECT_ID")
 SOURCE_PROJECT_ID = Variable.get("SOURCE_PROJECT_ID")
+# profide your keyfile.json path here
 KEY_FILE = '/home/airflow/gcs/data/keyfile.json'
 
-
 def value(col):
-    int_value = ['transaction_id', 'transaction_detail_id',
-                 'purchase_quantity']
-    str_value = ['transaction_number', 'purchase_payment_method',
-                 'purchase_source', 'product_id']
+    int_value = [
+        'transaction_id',
+        'transaction_detail_id',
+        'purchase_quantity']
+    str_value = [
+        'transaction_number', 
+        'purchase_payment_method',
+        'purchase_source', 
+        'product_id']
     float_value = ['purchase_amount']
     if col in int_value:
         return 'value.int_value'
@@ -32,11 +37,16 @@ def integrate_transaction(**kwargs):
         credentials=credentials,
         project=PROJECT_ID
     )
-    sql = f"""SELECT *
-            FROM {PROJECT_ID}.transactions.event
-            WHERE (event_name = 'purchase_item')
-            AND (event_datetime between '{kwargs.get('prev_ds')}'
-            AND '{kwargs.get('ds')}')
+    sql = f"""
+        SELECT *
+        FROM
+            {PROJECT_ID}.transactions.event
+        WHERE
+            (event_name = 'purchase_item')
+        AND
+            (event_datetime between '{kwargs.get('prev_ds')}'
+        AND
+            '{kwargs.get('ds')}')
     """
     query = client.query(sql)
     results = query.result()
@@ -94,16 +104,10 @@ default_args = {
 }
 
 with DAG(
-    "transactional_events_dag",
+    "transactional_events_pandas_dag",
     default_args=default_args,
     schedule_interval=timedelta(days=3),
 ) as dag:
-
-    copy_bq_table = PythonOperator(
-        task_id='copy_bq_table',
-        python_callable=copy_table,
-        provide_context=True
-    )
 
     transactional_events = PythonOperator(
         task_id='etl_to_bq',

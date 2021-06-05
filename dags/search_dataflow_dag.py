@@ -3,6 +3,7 @@ from airflow import DAG
 from airflow.models import Variable
 from airflow.contrib.operators.dataflow_operator import DataflowTemplateOperator
 from airflow.contrib.operators.bigquery_operator import BigQueryOperator
+from airflow.operators.dummy import DummyOperator
 
 BUCKET_PATH = Variable.get("BUCKET_PATH")
 BUCKET_INPUT = Variable.get("BUCKET_INPUT")
@@ -11,6 +12,23 @@ GCE_REGION = Variable.get("GCE_REGION")
 GCE_ZONE = Variable.get("GCE_ZONE") 
 OUTPUT_FULL_TABLE = Variable.get("ALL_KEYWORDS_BQ_OUTPUT_TABLE")
 OUTPUT_FINAL_TABLE = Variable.get("TOP_KEYWORDS_BQ_OUTPUT_TABLE")
+
+ds = "{{ ds }}"
+top_result_query = f"""
+    SELECT
+        lower(search_keyword) as keyword,
+        count(lower(search_keyword)) as search_count,
+        created_at as date
+    FROM
+        `{PROJECT_ID}.{OUTPUT_FULL_TABLE}`
+    WHERE
+        created_at = '{ds}'
+    GROUP BY
+        keyword, created_at
+    ORDER BY
+        search_count desc
+    LIMIT 1;
+"""
 
 default_args = {
     "start_date": datetime(2021,3,10),
@@ -30,8 +48,8 @@ with DAG(
     schedule_interval=timedelta(days=1),
 ) as dag:
     
-    storage_to_bigquery = DataflowTemplateOperator(
-        task_id="storage_to_bigquery",
+    gcs_to_bq = DataflowTemplateOperator(
+        task_id="gcs_to_bq",
         template="gs://dataflow-templates/latest/GCS_Text_to_BigQuery",
         parameters={
             "javascriptTextTransformFunctionName": "transform_csv_to_json",
@@ -43,17 +61,15 @@ with DAG(
         },
     )  
 
-    querying_daily_top_search = BigQueryOperator(
-        task_id = "querying_daily_top_search",
-        sql =  """SELECT lower(search_keyword) as keyword, count(lower(search_keyword)) as search_count, created_at as date
-               FROM `etl-on-cloud.week2.search-keyword`
-               WHERE created_at = '{{ds}}'
-               GROUP BY keyword, created_at
-               ORDER BY search_count desc
-               LIMIT 1;""",
+    bq_top_search = BigQueryOperator(
+        task_id = "bq_top_search",
+        sql = top_result_query,
         use_legacy_sql = False,
         destination_dataset_table = OUTPUT_FINAL_TABLE,
         write_disposition = 'WRITE_APPEND'
     )
 
-    storage_to_bigquery >> querying_daily_top_search
+    start = DummyOperator(task_id='start')
+    end = DummyOperator(task_id='end')
+
+    start >> gcs_to_bq >> bq_top_search >> end

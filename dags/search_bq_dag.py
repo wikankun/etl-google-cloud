@@ -3,6 +3,7 @@ from airflow import DAG
 from airflow.models import Variable
 from airflow.contrib.operators.gcs_to_bq import GoogleCloudStorageToBigQueryOperator
 from airflow.contrib.operators.bigquery_operator import BigQueryOperator
+from airflow.operators.dummy import DummyOperator
 
 BUCKET_PATH = Variable.get("BUCKET_PATH")
 BUCKET_INPUT = Variable.get("BUCKET_INPUT")
@@ -47,7 +48,7 @@ default_args = {
 }
 
 with DAG(
-    'daily_search_dag',
+    'search_bq_dag',
     default_args=default_args,
     description='ETL Blank Space Week 2',
     schedule_interval=timedelta(days=1),
@@ -78,7 +79,7 @@ with DAG(
         sql=convert_search_keyword_query,
         write_disposition='WRITE_APPEND',
         destination_dataset_table=PROJECT_ID +
-        ":search_history.converted_search_history",
+            ":search_history.converted_search_history",
         use_legacy_sql=False,
     )
 
@@ -87,8 +88,11 @@ with DAG(
         sql=most_searched_keyword_query,
         write_disposition='WRITE_APPEND',
         destination_dataset_table=PROJECT_ID +
-        ":search_history.top_search_history",
+            ":search_history.top_search_history",
         use_legacy_sql=False,
     )
 
-    gcs_to_bq >> convert_data_type >> bq_top_search_keywords
+    start = DummyOperator(task_id='start')
+    end = DummyOperator(task_id='end')
+
+    start >> gcs_to_bq >> convert_data_type >> bq_top_search_keywords >> end

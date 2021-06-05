@@ -1,12 +1,12 @@
 {
-    "BUCKET_PATH"  : "us-central1-airflow-bc49627a-bucket",
-	"BUCKET_INPUT" : "airflow-week2",
-    "PROJECT_ID": "blank-space-315611",
-    "SOURCE_PROJECT_ID": "academi-315200",
-    "ALL_KEYWORDS_BQ_OUTPUT_TABLE": "search_history.temp_search_history",
-    "GCS_TEMP_LOCATION": "gs://airflow-week2/temp",
-    "GCS_STG_LOCATION": "gs://airflow-week2/stg",
-    "TOP_KEYWORDS_BQ_OUTPUT_TABLE": "search_history.top_search_history",
-    "GCE_REGION": "us-central1",
-    "GCE_ZONE": "us-central1-c"
+    "BUCKET_PATH"  : "",
+    "BUCKET_INPUT" : "",
+    "PROJECT_ID": "",
+    "SOURCE_PROJECT_ID": "",
+    "ALL_KEYWORDS_BQ_OUTPUT_TABLE": "",
+    "GCS_TEMP_LOCATION": "gs://",
+    "GCS_STG_LOCATION": "gs://",
+    "TOP_KEYWORDS_BQ_OUTPUT_TABLE": "",
+    "GCE_REGION": "",
+    "GCE_ZONE": ""
 }
