@@ -11,7 +11,14 @@ ETL Learning Project Using Airflow
 - Create a project within Google Cloud Platform
 - Create a service account under IAM menu that has permission for Composer, Dataflow, and Bigquery actions
 - Create a new bucket in Google Cloud Storage, and upload data that will be used later
-- Create a new environment in Google Cloud Composer (it takes about 15-45 minutes)
+- Create a new environment in Google Cloud Composer (it takes about 15-45 minutes) with specifications:
+  - Location: us-central1
+  - Node count: 3
+  - Zone: us-central1a
+  - Machine Type: n1-standard-1
+  - Disk size (GB): 20 GB
+  - Image Version: composer-1.17.0-preview.1-airflow-2.0.1
+  - Python Version: 3
 - After the environment is ready, open airflow web ui and upload `variable.json` as airflow variable
 - Create tables in Bigquery, you can do it manually or by running
     ```
